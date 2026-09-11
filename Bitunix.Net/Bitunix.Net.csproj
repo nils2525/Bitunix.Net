@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Authors>nils2525</Authors>
+    <PackageId>Bitunix.Net</PackageId>
+    <Version>1.0.0</Version>
+    <Description>CryptoExchange.Net client for Bitunix public futures REST and WebSocket APIs and spot symbols.</Description>
+    <RepositoryUrl>https://github.com/nils2525/Bitunix.Net.git</RepositoryUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="CryptoExchange.Net" Version="12.5.1" />
+  </ItemGroup>
+</Project>
