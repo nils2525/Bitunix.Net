@@ -8,5 +8,6 @@ internal class BitunixSocketArgument
     public string Channel { get; set; } = "";
     /// <summary>[<c>symbol</c>] Native symbol.</summary>
     [JsonPropertyName("symbol")]
-    public string Symbol { get; set; } = "";
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Symbol { get; set; }
 }

@@ -4,7 +4,7 @@ using CryptoExchange.Net.Sockets.Default;
 using CryptoExchange.Net.Sockets.Default.Routing;
 using Microsoft.Extensions.Logging;
 namespace Bitunix.Net.Objects.Sockets;
-/// <summary>Owns one explicit batch of native channel memberships.</summary>
+/// <summary>Owns an explicit public batch or one authenticated account-wide channel.</summary>
 internal sealed class BitunixSubscription<T> : Subscription
 {
     #region Fields
@@ -14,15 +14,15 @@ internal sealed class BitunixSubscription<T> : Subscription
     #endregion
 
     #region Constructors
-    /// <summary>Creates a batch subscription.</summary>
-    internal BitunixSubscription(ILogger logger, string channel, string[] symbols, Action<DateTime, string?, BitunixSocketEvent<T>> handler) : base(logger, false)
+    /// <summary>Creates a public batch or an authenticated account-wide subscription.</summary>
+    internal BitunixSubscription(ILogger logger, string channel, string[] symbols, Action<DateTime, string?, BitunixSocketEvent<T>> handler, bool authenticated = false) : base(logger, authenticated)
     {
         _channel = channel;
         _symbols = symbols;
         _handler = handler;
-        IndividualSubscriptionCount = symbols.Length;
-        // Aggregate tickers may omit the envelope symbol. Route once per batch and filter each item downstream.
-        MessageRouter = channel == "tickers"
+        IndividualSubscriptionCount = Math.Max(1, symbols.Length);
+        // Aggregate tickers and account-wide channels may omit the envelope symbol.
+        MessageRouter = channel == "tickers" || authenticated
             ? MessageRouter.Create(MessageRoute.CreateForEvent<BitunixSocketEvent<T>>(channel, HandleMessage))
             : MessageRouter.Create(symbols.Select(s => MessageRoute.CreateForEvent<BitunixSocketEvent<T>>(channel, s, HandleMessage)).ToArray());
     }
@@ -32,7 +32,7 @@ internal sealed class BitunixSubscription<T> : Subscription
     private BitunixQuery CreateQuery(string operation) => new(new BitunixSocketRequest
     {
         Operation = operation,
-        Arguments = _symbols.Select(s => new BitunixSocketArgument { Channel = _channel, Symbol = s }).ToArray()
+        Arguments = _symbols.Length == 0 ? [new BitunixSocketArgument { Channel = _channel }] : _symbols.Select(s => new BitunixSocketArgument { Channel = _channel, Symbol = s }).ToArray()
     });
     private CallResult HandleMessage(SocketConnection connection, DateTime receiveTime, string? originalData, BitunixSocketEvent<T> message)
     {

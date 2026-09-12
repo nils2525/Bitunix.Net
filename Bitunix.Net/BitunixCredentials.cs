@@ -1,6 +1,6 @@
 using CryptoExchange.Net.Authentication;
 namespace Bitunix.Net;
-/// <summary>Bitunix key and secret configuration. Private endpoints are not implemented.</summary>
+/// <summary>Bitunix API key and secret configuration.</summary>
 public class BitunixCredentials : HMACCredential
 {
     /// <summary>Creates credentials for configuration binding.</summary>

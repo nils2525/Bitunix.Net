@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>Bitunix dependency injection registration.</summary>
 public static class ServiceCollectionExtensions
 {
-    /// <summary>Adds the public futures clients and their configured user-client provider.</summary>
+    /// <summary>Adds futures clients and their configured user-client provider.</summary>
     public static IServiceCollection AddBitunix(this IServiceCollection services, Action<BitunixOptions>? configure = null)
     {
         var options = new BitunixOptions();

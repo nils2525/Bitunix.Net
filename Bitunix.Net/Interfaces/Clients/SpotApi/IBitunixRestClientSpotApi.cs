@@ -5,4 +5,6 @@ public interface IBitunixRestClientSpotApi : IRestApiClient<BitunixCredentials>
 {
     /// <summary>Market data endpoints.</summary>
     IBitunixRestClientSpotApiExchangeData ExchangeData { get; }
+    /// <summary>Authenticated spot balances, user information and wallet transfers.</summary>
+    IBitunixRestClientSpotApiAccount Account { get; }
 }

@@ -11,7 +11,7 @@ public class BitunixSocketClient : BaseSocketClient<BitunixEnvironment, BitunixC
 {
     /// <inheritdoc />
     public IBitunixSocketClientFuturesApi FuturesApi { get; }
-    /// <summary>Creates a public socket client.</summary>
+    /// <summary>Creates a futures market and account socket client.</summary>
     public BitunixSocketClient(Action<BitunixSocketOptions>? optionsDelegate = null) : this(Options.Create(ApplyOptionsDelegate(optionsDelegate))) { }
     /// <summary>Creates a socket client using injected options.</summary>
     public BitunixSocketClient(IOptions<BitunixSocketOptions> options, ILoggerFactory? loggerFactory = null) : base(loggerFactory, "Bitunix")

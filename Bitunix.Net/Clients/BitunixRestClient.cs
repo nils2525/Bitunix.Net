@@ -15,7 +15,7 @@ public class BitunixRestClient : BaseRestClient<BitunixEnvironment, BitunixCrede
     public IBitunixRestClientFuturesApi FuturesApi { get; }
     /// <inheritdoc />
     public IBitunixRestClientSpotApi SpotApi { get; }
-    /// <summary>Creates a public REST client.</summary>
+    /// <summary>Creates a Bitunix REST client.</summary>
     public BitunixRestClient(Action<BitunixRestOptions>? optionsDelegate = null) : this(null, null, Options.Create(ApplyOptionsDelegate(optionsDelegate))) { }
     /// <summary>Creates a client with an injected transport and options.</summary>
     public BitunixRestClient(HttpClient? httpClient, ILoggerFactory? loggerFactory, IOptions<BitunixRestOptions> options) : base(loggerFactory, "Bitunix")

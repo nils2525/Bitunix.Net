@@ -21,13 +21,21 @@ internal sealed class BitunixRestClientFuturesApi : RestApiClient<BitunixEnviron
     protected override IRestMessageHandler MessageHandler { get; } = new BitunixRestMessageHandler();
     /// <inheritdoc />
     public IBitunixRestClientFuturesApiExchangeData ExchangeData { get; }
+    /// <inheritdoc />
+    public IBitunixRestClientFuturesApiAccount Account { get; }
+    /// <inheritdoc />
+    public IBitunixRestClientFuturesApiTrading Trading { get; }
     #endregion
 
     #region Constructors
     /// <summary>Creates the futures REST API.</summary>
     internal BitunixRestClientFuturesApi(ILoggerFactory? loggerFactory, HttpClient? httpClient, BitunixRestOptions options)
         : base(loggerFactory, BitunixExchange.Metadata.Id, httpClient, options.Environment.RestClientAddress, options, options.FuturesOptions)
-        => ExchangeData = new BitunixRestClientFuturesApiExchangeData(this);
+    {
+        ExchangeData = new BitunixRestClientFuturesApiExchangeData(this);
+        Account = new BitunixRestClientFuturesApiAccount(this);
+        Trading = new BitunixRestClientFuturesApiTrading(this);
+    }
     #endregion
 
     #region Methods
@@ -35,7 +43,7 @@ internal sealed class BitunixRestClientFuturesApi : RestApiClient<BitunixEnviron
     protected override IMessageSerializer CreateSerializer() => new SystemTextJsonMessageSerializer(BitunixExchange.SerializerContext);
     /// <inheritdoc />
     protected override BitunixAuthenticationProvider CreateAuthenticationProvider(BitunixCredentials credentials) => new(credentials);
-    /// <summary>Sends a public request and unwraps its response.</summary>
+    /// <summary>Sends a request and unwraps its response.</summary>
     internal async Task<HttpResult<T>> SendAsync<T>(RequestDefinition definition, Parameters parameters, CancellationToken ct)
     {
         var result = await base.SendAsync<BitunixResponse<T>>(definition, parameters, ct).ConfigureAwait(false);

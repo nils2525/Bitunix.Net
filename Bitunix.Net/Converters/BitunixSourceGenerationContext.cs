@@ -3,7 +3,25 @@ using System.Text.Json.Serialization;
 using Bitunix.Net.Objects.Models;
 using Bitunix.Net.Objects.Sockets;
 namespace Bitunix.Net.Converters;
-/// <summary>JSON metadata for the supported public market data contracts.</summary>
+/// <summary>JSON metadata for supported market data and authenticated account contracts.</summary>
+[JsonSerializable(typeof(BitunixResponse<BitunixSpotBalance[]>))]
+[JsonSerializable(typeof(BitunixResponse<BitunixSpotUser>))]
+[JsonSerializable(typeof(BitunixResponse<string>))]
+[JsonSerializable(typeof(BitunixResponse<BitunixAccount>))]
+[JsonSerializable(typeof(BitunixResponse<BitunixLeverageAndMarginMode>))]
+[JsonSerializable(typeof(BitunixResponse<BitunixLeverage>))]
+[JsonSerializable(typeof(BitunixResponse<BitunixMarginMode>))]
+[JsonSerializable(typeof(BitunixResponse<BitunixPositionMode>))]
+[JsonSerializable(typeof(BitunixResponse<BitunixOrderId>))]
+[JsonSerializable(typeof(BitunixResponse<BitunixOrder>))]
+[JsonSerializable(typeof(BitunixResponse<BitunixOrderPage>))]
+[JsonSerializable(typeof(BitunixResponse<BitunixUserTradePage>))]
+[JsonSerializable(typeof(BitunixResponse<BitunixPosition[]>))]
+[JsonSerializable(typeof(BitunixResponse<BitunixPositionHistoryPage>))]
+[JsonSerializable(typeof(BitunixResponse<BitunixCancelOrdersResult>))]
+[JsonSerializable(typeof(BitunixResponse<BitunixPositionId>))]
+[JsonSerializable(typeof(BitunixCancelOrderRequest[]))]
+[JsonSerializable(typeof(CryptoExchange.Net.Objects.Parameters))]
 [JsonSerializable(typeof(BitunixResponse<BitunixSpotSymbol[]>))]
 [JsonSerializable(typeof(BitunixResponse<BitunixSymbol[]>))]
 [JsonSerializable(typeof(BitunixResponse<BitunixTicker[]>))]
@@ -15,6 +33,11 @@ namespace Bitunix.Net.Converters;
 [JsonSerializable(typeof(BitunixSocketEvent<BitunixTrade[]>))]
 [JsonSerializable(typeof(BitunixSocketEvent))]
 [JsonSerializable(typeof(BitunixSocketRequest))]
+[JsonSerializable(typeof(BitunixSocketEvent<BitunixOrderBookUpdate>))]
+[JsonSerializable(typeof(BitunixSocketEvent<BitunixBalanceUpdate>))]
+[JsonSerializable(typeof(BitunixSocketEvent<BitunixOrderUpdate>))]
+[JsonSerializable(typeof(BitunixSocketEvent<BitunixPositionUpdate>))]
+[JsonSerializable(typeof(BitunixLoginRequest))]
 [JsonSerializable(typeof(BitunixPing))]
 [JsonSerializable(typeof(JsonElement))]
 internal partial class BitunixSourceGenerationContext : JsonSerializerContext { }
