@@ -93,9 +93,11 @@ internal sealed class BitunixSocketClientFuturesApi : SocketApiClient<BitunixEnv
     /// <inheritdoc />
     public Task<WebSocketResult<UpdateSubscription>> SubscribeToOrderBookUpdatesAsync(IEnumerable<string> symbols, int depth, Action<DataEvent<BitunixOrderBookUpdate>> handler, CancellationToken ct = default)
     {
-        if (depth is not (1 or 5 or 15))
-            throw new ArgumentOutOfRangeException(nameof(depth), "Bitunix snapshot depth must be 1, 5 or 15.");
-        var subscription = new BitunixSubscription<BitunixOrderBookUpdate>(_logger, "depth_book" + depth, ValidateSymbols(symbols),
+        if (depth is not (0 or 1 or 5 or 15))
+            throw new ArgumentOutOfRangeException(nameof(depth), "Bitunix snapshot depth must be 0 (full book), 1, 5 or 15.");
+        var channel = depth == 0 ? "depth_books" : "depth_book" + depth;
+        // Live BTC/ETH captures contain the entire book on every depth_books frame; removed prices are omitted, not zeroed.
+        var subscription = new BitunixSubscription<BitunixOrderBookUpdate>(_logger, channel, ValidateSymbols(symbols),
             (received, original, message) => handler(CreateEvent(message.Data, message.Symbol, message.Channel, message.Timestamp, received, original, SocketUpdateType.Snapshot)));
         return SubscribeAsync(BaseAddress, subscription, ct);
     }

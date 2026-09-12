@@ -12,7 +12,8 @@ public interface IBitunixSocketClientFuturesApi : ISocketApiClient<BitunixCreden
     Task<WebSocketResult<UpdateSubscription>> SubscribeToPriceUpdatesAsync(IEnumerable<string> symbols, Action<DataEvent<BitunixPriceUpdate>> handler, CancellationToken ct = default);
     /// <summary>Subscribes to public trades. <see href="https://www.bitunix.com/api-docs/futures/websocket/public/Trade%20Channel.html" /></summary>
     Task<WebSocketResult<UpdateSubscription>> SubscribeToTradeUpdatesAsync(IEnumerable<string> symbols, Action<DataEvent<BitunixTrade[]>> handler, CancellationToken ct = default);
-    /// <summary>Subscribes to complete 1, 5 or 15-level order-book snapshots. <see href="https://www.bitunix.com/api-docs/futures/websocket/public/depth%20channel.html" /></summary>
+    /// <summary>Subscribes to complete order-book snapshots. Use depth 0 for the full book, or 1, 5 or 15 for a limited book. <see href="https://www.bitunix.com/api-docs/futures/websocket/public/depth%20channel.html" /></summary>
+    /// <remarks>The full-depth channel was observed to publish complete snapshots on every message, including removal by omission, despite the documentation describing incremental updates.</remarks>
     Task<WebSocketResult<UpdateSubscription>> SubscribeToOrderBookUpdatesAsync(IEnumerable<string> symbols, int depth, Action<DataEvent<BitunixOrderBookUpdate>> handler, CancellationToken ct = default);
     /// <summary>Subscribes to all futures account balance updates. <see href="https://www.bitunix.com/api-docs/futures/websocket/private/Balance%20Channel.html" /></summary>
     Task<WebSocketResult<UpdateSubscription>> SubscribeToBalanceUpdatesAsync(Action<DataEvent<BitunixBalanceUpdate>> handler, CancellationToken ct = default);
