@@ -8,6 +8,8 @@ namespace Bitunix.Net;
 /// <summary>Bitunix metadata and protocol configuration.</summary>
 public static class BitunixExchange
 {
+    /// <summary>Conservative local batch size for the undocumented spot website feed.</summary>
+    public const int SpotSymbolsPerSubscription = 100;
     /// <summary>Source-generated JSON serializer configuration.</summary>
     internal static JsonSerializerOptions SerializerContext { get; } = SerializerOptions.WithConverters(JsonSerializerContextCache.GetOrCreate<BitunixSourceGenerationContext>(), new BitunixTickerUpdatesConverter());
     /// <summary>Request parameter serialization.</summary>

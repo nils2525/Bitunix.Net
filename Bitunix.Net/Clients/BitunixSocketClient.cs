@@ -1,6 +1,8 @@
 using Bitunix.Net.Clients.FuturesApi;
+using Bitunix.Net.Clients.SpotApi;
 using Bitunix.Net.Interfaces.Clients;
 using Bitunix.Net.Interfaces.Clients.FuturesApi;
+using Bitunix.Net.Interfaces.Clients.SpotApi;
 using Bitunix.Net.Objects.Options;
 using CryptoExchange.Net.Clients;
 using Microsoft.Extensions.Logging;
@@ -11,6 +13,8 @@ public class BitunixSocketClient : BaseSocketClient<BitunixEnvironment, BitunixC
 {
     /// <inheritdoc />
     public IBitunixSocketClientFuturesApi FuturesApi { get; }
+    /// <inheritdoc />
+    public IBitunixSocketClientSpotApi SpotApi { get; }
     /// <summary>Creates a futures market and account socket client.</summary>
     public BitunixSocketClient(Action<BitunixSocketOptions>? optionsDelegate = null) : this(Options.Create(ApplyOptionsDelegate(optionsDelegate))) { }
     /// <summary>Creates a socket client using injected options.</summary>
@@ -18,5 +22,6 @@ public class BitunixSocketClient : BaseSocketClient<BitunixEnvironment, BitunixC
     {
         Initialize(options.Value);
         FuturesApi = AddApiClient(new BitunixSocketClientFuturesApi(loggerFactory, options.Value));
+        SpotApi = AddApiClient(new BitunixSocketClientSpotApi(loggerFactory, options.Value));
     }
 }
