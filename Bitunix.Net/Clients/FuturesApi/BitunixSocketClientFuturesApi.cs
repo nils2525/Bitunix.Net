@@ -13,6 +13,7 @@ using CryptoExchange.Net.Objects;
 using CryptoExchange.Net.Objects.Errors;
 using CryptoExchange.Net.Objects.Sockets;
 using CryptoExchange.Net.SharedApis;
+using CryptoExchange.Net.Sockets.Interfaces;
 using Microsoft.Extensions.Logging;
 namespace Bitunix.Net.Clients.FuturesApi;
 /// <inheritdoc />
@@ -24,6 +25,8 @@ internal sealed class BitunixSocketClientFuturesApi : SocketApiClient<BitunixEnv
         : base(loggerFactory, BitunixExchange.Metadata.Id, options.Environment.SocketClientAddress, options, options.FuturesOptions)
     {
         RateLimiter = BitunixExchange.RateLimiter.Socket;
+        // ClientWebSocket control heartbeats bypass the message gate. The metered JSON ping owns liveness.
+        KeepAliveInterval = TimeSpan.Zero;
         MaxIndividualSubscriptionsPerConnection = 300;
         AddSystemSubscription(new BitunixSystemSubscription(_logger));
         // The docs specify ping messages but no idle timeout. Keep a conservative 10-second heartbeat.
@@ -54,6 +57,16 @@ internal sealed class BitunixSocketClientFuturesApi : SocketApiClient<BitunixEnv
         var subscription = new BitunixSubscription<T>(_logger, channel, [],
             (received, original, message) => handler(CreateEvent(message.Data, symbolSelector(message.Data), message.Channel, message.Timestamp, received, original)), authenticated: true);
         return SubscribeAsync(((BitunixSocketOptions)ClientOptions).Environment.PrivateSocketClientAddress, subscription, ct);
+    }
+    /// <inheritdoc />
+    protected override async Task<CallResult> ConnectSocketAsync(ISocketConnection socketConnection, CancellationToken ct)
+    {
+        var result = await base.ConnectSocketAsync(socketConnection, ct).ConfigureAwait(false);
+        // CEN exposes a rejected 403 handshake only through the original WebSocketException, not its status code.
+        // This exact failure was observed during startup; preserve its error while cooling down sibling clients.
+        if (result.Error?.Exception is WebSocketException exception && exception.Message.Contains("status code '403'", StringComparison.Ordinal))
+            await HandleConnectRateLimitedAsync().ConfigureAwait(false);
+        return result;
     }
     /// <inheritdoc />
     protected override IMessageSerializer CreateSerializer() => new SystemTextJsonMessageSerializer(BitunixExchange.SerializerContext);

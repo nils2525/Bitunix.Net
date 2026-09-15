@@ -18,7 +18,7 @@ public sealed class BitunixRateLimiters
     internal IRateLimitGate SpotRest { get; }
     /// <summary>Conservative website pacing of one operation per second per connection; venue budgets are undocumented.</summary>
     internal IRateLimitGate SpotSocket { get; }
-    /// <summary>WebSocket operations, including heartbeat: 5 messages per second per connection.</summary>
+    /// <summary>Four JSON operations per second per connection, reserving one of the venue's five frames for transport control replies.</summary>
     internal IRateLimitGate Socket { get; }
     #endregion
 
@@ -37,8 +37,14 @@ public sealed class BitunixRateLimiters
         PrivateRest = new RateLimitGate("Bitunix private REST").AddGuard(new RateLimitGuard(RateLimitGuard.PerEndpoint, new LimitItemTypeFilter(RateLimitItemType.Request), 10, TimeSpan.FromSeconds(1), RateLimitWindowType.Sliding));
         PrivateTrading = new RateLimitGate("Bitunix private trading").AddGuard(new RateLimitGuard(RateLimitGuard.PerEndpoint, new LimitItemTypeFilter(RateLimitItemType.Request), 5, TimeSpan.FromSeconds(1), RateLimitWindowType.Sliding));
         SpotRest = new RateLimitGate("Bitunix Spot REST").AddGuard(new RateLimitGuard(RateLimitGuard.PerEndpoint, new LimitItemTypeFilter(RateLimitItemType.Request), 1, TimeSpan.FromSeconds(1), RateLimitWindowType.Sliding));
-        Socket = new RateLimitGate("Bitunix WebSocket").AddGuard(new RateLimitGuard(RateLimitGuard.PerConnection, new LimitItemTypeFilter(RateLimitItemType.Request), 5, TimeSpan.FromSeconds(1), RateLimitWindowType.Sliding));
-        SpotSocket = new RateLimitGate("Bitunix Spot WebSocket").AddGuard(new RateLimitGuard(RateLimitGuard.PerConnection, new LimitItemTypeFilter(RateLimitItemType.Request), 1, TimeSpan.FromSeconds(1), RateLimitWindowType.Sliding));
+        // Connection pacing is a local startup safeguard, not a published Bitunix connection limit.
+        // Static host guards cover all clients, including public/private sockets and reconnect attempts.
+        Socket = new RateLimitGate("Bitunix WebSocket")
+            .AddGuard(new RateLimitGuard(RateLimitGuard.PerHost, new LimitItemTypeFilter(RateLimitItemType.Connection), 1, TimeSpan.FromSeconds(1), RateLimitWindowType.Sliding))
+            .AddGuard(new RateLimitGuard(RateLimitGuard.PerConnection, new LimitItemTypeFilter(RateLimitItemType.Request), 4, TimeSpan.FromSeconds(1), RateLimitWindowType.Sliding));
+        SpotSocket = new RateLimitGate("Bitunix Spot WebSocket")
+            .AddGuard(new RateLimitGuard(RateLimitGuard.PerHost, new LimitItemTypeFilter(RateLimitItemType.Connection), 1, TimeSpan.FromSeconds(1), RateLimitWindowType.Sliding))
+            .AddGuard(new RateLimitGuard(RateLimitGuard.PerConnection, new LimitItemTypeFilter(RateLimitItemType.Request), 1, TimeSpan.FromSeconds(1), RateLimitWindowType.Sliding));
         Rest.RateLimitTriggered += e => RateLimitTriggered?.Invoke(e);
         PrivateRest.RateLimitTriggered += e => RateLimitTriggered?.Invoke(e);
         PrivateTrading.RateLimitTriggered += e => RateLimitTriggered?.Invoke(e);

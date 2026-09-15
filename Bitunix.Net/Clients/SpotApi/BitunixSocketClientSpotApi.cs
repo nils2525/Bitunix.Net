@@ -22,6 +22,8 @@ internal sealed class BitunixSocketClientSpotApi : SocketApiClient<BitunixEnviro
     internal BitunixSocketClientSpotApi(ILoggerFactory? loggerFactory, BitunixSocketOptions options) : base(loggerFactory, BitunixExchange.Metadata.Id, options.Environment.SpotSocketClientAddress, options, options.SpotOptions)
     {
         RateLimiter = BitunixExchange.RateLimiter.SpotSocket;
+        // The website JSON heartbeat already checks liveness and consumes the spot message budget.
+        KeepAliveInterval = TimeSpan.Zero;
         // Local conservative cap, not a documented venue limit; keep at most two maximum-size batches per connection.
         MaxIndividualSubscriptionsPerConnection = BitunixExchange.SpotSymbolsPerSubscription * 2;
         AddSystemSubscription(new BitunixSpotSystemSubscription(_logger));
