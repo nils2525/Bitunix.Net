@@ -10,6 +10,8 @@ internal sealed class BitunixQuery : Query<JsonElement>
     {
         // Unsubscribe only echoes its operation, so it cannot safely correlate concurrent requests either.
         ExpectsResponse = false;
-        MessageRouter = MessageRouter.CreateVoid<JsonElement>(request.Operation);
+        // Queries are registered before leaving the rate-limit queue. An earlier operation's reply must
+        // not complete a queued send; the system subscription consumes these uncorrelated echoes.
+        MessageRouter = MessageRouter.Create();
     }
 }

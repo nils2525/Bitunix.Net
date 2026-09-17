@@ -16,9 +16,9 @@ public sealed class BitunixRateLimiters
     internal IRateLimitGate PrivateTrading { get; }
     /// <summary>Conservative spot pacing of one request per second. Read budgets are undocumented; transfers allow 10 per second per IP.</summary>
     internal IRateLimitGate SpotRest { get; }
-    /// <summary>Conservative website pacing of one operation per second per connection; venue budgets are undocumented.</summary>
+    /// <summary>Website socket operations, including heartbeat: paced below five messages per second per connection, validated by public-feed probes; venue budgets are undocumented.</summary>
     internal IRateLimitGate SpotSocket { get; }
-    /// <summary>Four JSON operations per second per connection, reserving one of the venue's five frames for transport control replies.</summary>
+    /// <summary>Futures socket operations, including heartbeat: paced below the documented five messages per second per connection.</summary>
     internal IRateLimitGate Socket { get; }
     #endregion
 
@@ -37,14 +37,16 @@ public sealed class BitunixRateLimiters
         PrivateRest = new RateLimitGate("Bitunix private REST").AddGuard(new RateLimitGuard(RateLimitGuard.PerEndpoint, new LimitItemTypeFilter(RateLimitItemType.Request), 10, TimeSpan.FromSeconds(1), RateLimitWindowType.Sliding));
         PrivateTrading = new RateLimitGate("Bitunix private trading").AddGuard(new RateLimitGuard(RateLimitGuard.PerEndpoint, new LimitItemTypeFilter(RateLimitItemType.Request), 5, TimeSpan.FromSeconds(1), RateLimitWindowType.Sliding));
         SpotRest = new RateLimitGate("Bitunix Spot REST").AddGuard(new RateLimitGuard(RateLimitGuard.PerEndpoint, new LimitItemTypeFilter(RateLimitItemType.Request), 1, TimeSpan.FromSeconds(1), RateLimitWindowType.Sliding));
-        // Connection pacing is a local startup safeguard, not a published Bitunix connection limit.
+        // Four-connection startup bursts were validated on both public feeds; this is not a published venue limit.
         // Static host guards cover all clients, including public/private sockets and reconnect attempts.
+        // A one-token decay guard spaces JSON messages by 210 ms, including subscribe, unsubscribe, login, and ping.
+        // This keeps a timing margin below five per second without CEN's extra one-second sliding-window wait.
         Socket = new RateLimitGate("Bitunix WebSocket")
-            .AddGuard(new RateLimitGuard(RateLimitGuard.PerHost, new LimitItemTypeFilter(RateLimitItemType.Connection), 1, TimeSpan.FromSeconds(1), RateLimitWindowType.Sliding))
-            .AddGuard(new RateLimitGuard(RateLimitGuard.PerConnection, new LimitItemTypeFilter(RateLimitItemType.Request), 4, TimeSpan.FromSeconds(1), RateLimitWindowType.Sliding));
+            .AddGuard(new RateLimitGuard(RateLimitGuard.PerHost, new LimitItemTypeFilter(RateLimitItemType.Connection), 4, TimeSpan.FromSeconds(1), RateLimitWindowType.Sliding))
+            .AddGuard(new RateLimitGuard(RateLimitGuard.PerConnection, new LimitItemTypeFilter(RateLimitItemType.Request), 1, TimeSpan.FromMilliseconds(210), RateLimitWindowType.Decay, decayPerTimeSpan: 1));
         SpotSocket = new RateLimitGate("Bitunix Spot WebSocket")
-            .AddGuard(new RateLimitGuard(RateLimitGuard.PerHost, new LimitItemTypeFilter(RateLimitItemType.Connection), 1, TimeSpan.FromSeconds(1), RateLimitWindowType.Sliding))
-            .AddGuard(new RateLimitGuard(RateLimitGuard.PerConnection, new LimitItemTypeFilter(RateLimitItemType.Request), 1, TimeSpan.FromSeconds(1), RateLimitWindowType.Sliding));
+            .AddGuard(new RateLimitGuard(RateLimitGuard.PerHost, new LimitItemTypeFilter(RateLimitItemType.Connection), 4, TimeSpan.FromSeconds(1), RateLimitWindowType.Sliding))
+            .AddGuard(new RateLimitGuard(RateLimitGuard.PerConnection, new LimitItemTypeFilter(RateLimitItemType.Request), 1, TimeSpan.FromMilliseconds(210), RateLimitWindowType.Decay, decayPerTimeSpan: 1));
         Rest.RateLimitTriggered += e => RateLimitTriggered?.Invoke(e);
         PrivateRest.RateLimitTriggered += e => RateLimitTriggered?.Invoke(e);
         PrivateTrading.RateLimitTriggered += e => RateLimitTriggered?.Invoke(e);
