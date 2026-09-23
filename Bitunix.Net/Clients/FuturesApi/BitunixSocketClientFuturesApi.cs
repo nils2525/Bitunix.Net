@@ -73,7 +73,7 @@ internal sealed class BitunixSocketClientFuturesApi : SocketApiClient<BitunixEnv
     /// <inheritdoc />
     protected override BitunixAuthenticationProvider CreateAuthenticationProvider(BitunixCredentials credentials) => new(credentials);
     /// <inheritdoc />
-    public override ISocketMessageHandler CreateMessageConverter(WebSocketMessageType messageType) => new BitunixSocketMessageHandler();
+    public override ISocketMessageHandler CreateMessageConverter(WebSocketMessageType messageType) => new BitunixSocketMessageHandler(_logger);
     /// <inheritdoc />
     public override string FormatSymbol(string baseAsset, string quoteAsset, TradingMode tradingMode, DateTime? deliverTime = null) => BitunixExchange.FormatSymbol(baseAsset, quoteAsset, tradingMode, deliverTime);
     /// <inheritdoc />

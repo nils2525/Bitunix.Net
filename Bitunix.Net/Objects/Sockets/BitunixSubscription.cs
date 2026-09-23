@@ -21,8 +21,8 @@ internal sealed class BitunixSubscription<T> : Subscription
         _symbols = symbols;
         _handler = handler;
         IndividualSubscriptionCount = Math.Max(1, symbols.Length);
-        // Aggregate tickers and account-wide channels may omit the envelope symbol.
-        MessageRouter = channel == "tickers" || authenticated
+        // Public routes must identify native symbols so closing disjoint batches sends each unsubscribe.
+        MessageRouter = authenticated
             ? MessageRouter.Create(MessageRoute.CreateForEvent<BitunixSocketEvent<T>>(channel, HandleMessage))
             : MessageRouter.Create(symbols.Select(s => MessageRoute.CreateForEvent<BitunixSocketEvent<T>>(channel, s, HandleMessage)).ToArray());
     }
