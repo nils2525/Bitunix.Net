@@ -66,6 +66,23 @@ internal sealed class BitunixRestClientFuturesApiTrading(BitunixRestClientFuture
         return SendAsync<BitunixOrderId>(HttpMethod.Post, "trade/place_order", parameters, ct);
     }
     /// <inheritdoc />
+    public Task<HttpResult<BitunixOrderId>> ModifyOrderAsync(string symbol, string orderId, decimal quantity, decimal price, CancellationToken ct = default)
+    {
+        ValidateOrderIdentifier(orderId, null);
+        if (quantity <= 0)
+            throw new ArgumentOutOfRangeException(nameof(quantity));
+        if (price <= 0)
+            throw new ArgumentOutOfRangeException(nameof(price));
+
+        var parameters = new Parameters(BitunixExchange.ParameterSettings);
+        // The official request example includes symbol, although its parameter table omits it.
+        parameters.Add("symbol", symbol);
+        parameters.Add("orderId", orderId);
+        parameters.Add("qty", quantity, DecimalSerialization.String);
+        parameters.Add("price", price, DecimalSerialization.String);
+        return SendAsync<BitunixOrderId>(HttpMethod.Post, "trade/modify_order", parameters, ct);
+    }
+    /// <inheritdoc />
     public Task<HttpResult<BitunixOrder>> GetOrderAsync(string? orderId = null, string? clientOrderId = null, CancellationToken ct = default)
     {
         ValidateOrderIdentifier(orderId, clientOrderId);
@@ -136,4 +153,3 @@ internal sealed class BitunixRestClientFuturesApiTrading(BitunixRestClientFuture
     }
     #endregion
 }
-

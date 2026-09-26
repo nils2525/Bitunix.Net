@@ -6,6 +6,8 @@ public interface IBitunixRestClientFuturesApiTrading
 {
     /// <summary>Places a futures order. In hedge mode side identifies the position direction and tradeSide is OPEN or CLOSE. <a href="https://www.bitunix.com/api-docs/futures/trade/place_order.html" /></summary>
     Task<HttpResult<BitunixOrderId>> PlaceOrderAsync(string symbol, string side, string orderType, decimal quantity, decimal? price = null, string? tradeSide = null, string? positionId = null, string? timeInForce = null, string? clientOrderId = null, bool? reduceOnly = null, CancellationToken ct = default);
+    /// <summary>Submits new limit price and total base quantity for an existing order. REST success acknowledges submission; the order stream confirms execution. <a href="https://www.bitunix.com/api-docs/futures/trade/modify_order.html" /></summary>
+    Task<HttpResult<BitunixOrderId>> ModifyOrderAsync(string symbol, string orderId, decimal quantity, decimal price, CancellationToken ct = default);
     /// <summary>Gets an order by exchange or client identifier. <a href="https://www.bitunix.com/api-docs/futures/trade/get_order_detail.html" /></summary>
     Task<HttpResult<BitunixOrder>> GetOrderAsync(string? orderId = null, string? clientOrderId = null, CancellationToken ct = default);
     /// <summary>Gets pending orders in descending creation order with offset pagination (maximum 100 per page). <a href="https://www.bitunix.com/api-docs/futures/trade/get_pending_orders.html" /></summary>
@@ -23,4 +25,3 @@ public interface IBitunixRestClientFuturesApiTrading
     /// <summary>Closes a position by its identifier at market. <a href="https://www.bitunix.com/api-docs/futures/trade/flash_close_position.html" /></summary>
     Task<HttpResult<BitunixPositionId>> ClosePositionAsync(string positionId, CancellationToken ct = default);
 }
-
