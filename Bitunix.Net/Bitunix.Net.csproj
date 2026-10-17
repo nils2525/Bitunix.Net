@@ -13,6 +13,6 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="CryptoExchange.Net" Version="13.0.0" />
+    <PackageReference Include="CryptoExchange.Net" Version="13.2.0" />
   </ItemGroup>
 </Project>
