@@ -6,6 +6,7 @@ namespace Bitunix.Net.Converters;
 /// <summary>JSON metadata for supported market data and authenticated account contracts.</summary>
 [JsonSerializable(typeof(BitunixResponse<BitunixSpotBalance[]>))]
 [JsonSerializable(typeof(BitunixResponse<BitunixSpotUser>))]
+[JsonSerializable(typeof(BitunixResponse<BitunixTaxPage>))]
 [JsonSerializable(typeof(BitunixResponse<string>))]
 [JsonSerializable(typeof(BitunixResponse<BitunixAccount>))]
 [JsonSerializable(typeof(BitunixResponse<BitunixLeverageAndMarginMode>))]

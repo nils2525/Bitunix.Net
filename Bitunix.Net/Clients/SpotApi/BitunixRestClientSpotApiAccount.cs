@@ -22,6 +22,25 @@ internal sealed class BitunixRestClientSpotApiAccount(BitunixRestClientSpotApi c
     public Task<HttpResult<BitunixSpotUser>> GetUserInfoAsync(CancellationToken ct = default)
         => SendAsync<BitunixSpotUser>(HttpMethod.Get, "user/info", new Parameters(BitunixExchange.ParameterSettings), ct);
     /// <inheritdoc />
+    public Task<HttpResult<BitunixTaxPage>> GetTaxRecordsAsync(DateTime startTime, DateTime endTime, IEnumerable<string>? dataTypeCodes = null, int page = 1, int pageSize = 1000, CancellationToken ct = default)
+    {
+        if (endTime < startTime || endTime - startTime > TimeSpan.FromDays(365))
+            throw new ArgumentOutOfRangeException(nameof(endTime), "Tax history windows must be ordered and span at most 365 days.");
+        if (page < 1)
+            throw new ArgumentOutOfRangeException(nameof(page));
+        if (pageSize is < 1 or > 1000)
+            throw new ArgumentOutOfRangeException(nameof(pageSize));
+
+        var parameters = new Parameters(BitunixExchange.ParameterSettings);
+        parameters.Add("startTime", startTime.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss.fff'Z'", System.Globalization.CultureInfo.InvariantCulture));
+        parameters.Add("endTime", endTime.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss.fff'Z'", System.Globalization.CultureInfo.InvariantCulture));
+        if (dataTypeCodes != null)
+            parameters.Add("dataTypeCodes", dataTypeCodes.ToArray());
+        parameters.Add("page", page);
+        parameters.Add("pageSize", pageSize);
+        return SendAsync<BitunixTaxPage>(HttpMethod.Post, "tax/filing/page", parameters, ct);
+    }
+    /// <inheritdoc />
     public Task<HttpResult<string>> TransferAsync(string asset, string transferType, decimal amount, CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(asset);
