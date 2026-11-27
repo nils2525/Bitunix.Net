@@ -13,6 +13,11 @@ internal sealed class BitunixSpotSubscription : Subscription
     private readonly Action<DateTime, string?, string, string, BitunixSpotSocketItem> _handler;
     #endregion
 
+    #region Properties
+    /// <inheritdoc />
+    public override string[] SubscriptionIdentifiers { get; }
+    #endregion
+
     #region Constructors
     /// <summary>Creates one homogeneous channel batch, retaining native symbol identities for delivery.</summary>
     internal BitunixSpotSubscription(ILogger logger, string prefix, string[] symbols, Action<DateTime, string?, string, string, BitunixSpotSocketItem> handler) : base(logger, false)
@@ -22,13 +27,15 @@ internal sealed class BitunixSpotSubscription : Subscription
         _handler = handler;
         IndividualSubscriptionCount = _channels.Length;
         // Frames batch heterogeneous channels; CEN deserializes the common envelope once and each owner selects its channels.
-        // CEN also uses the complete route set as native subscription identity when deciding whether to unsubscribe.
-        // The extra filtered route identifies this exact batch; the website envelope has no single topic filter,
-        // so only the two unfiltered routes deliver messages. Distinct batches must never suppress each other's unsub.
+        // The website envelope has no single topic filter, so the routes alone would give every batch the same identity.
+        // CEN would then treat a second batch as already subscribed and never send its channels, while adding a
+        // batch-specific route makes all batches partially overlap and forces each onto its own connection. Identifying
+        // the subscription by its channels lets disjoint batches share a connection, serves an identical batch once and
+        // keeps batches sharing a channel apart, so closing one never unsubscribes the other.
+        SubscriptionIdentifiers = _channels;
         MessageRouter = MessageRouter.Create(
             EventRoute<BitunixSpotSocketEvent>.CreateWithoutTopicFilter("sub", HandleMessage),
-            EventRoute<BitunixSpotSocketEvent>.CreateWithoutTopicFilter("push", HandleMessage),
-            EventRoute<BitunixSpotSocketEvent>.CreateWithTopicFilter("push", string.Join(",", _channels.OrderBy(x => x, StringComparer.Ordinal)), HandleMessage));
+            EventRoute<BitunixSpotSocketEvent>.CreateWithoutTopicFilter("push", HandleMessage));
     }
     #endregion
 
